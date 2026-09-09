@@ -1,4 +1,5 @@
 import type { HtmlAuditCheck } from "./types";
+import { socialMetadataChecks } from "./social-metadata-checks";
 
 function value(
   document: Parameters<HtmlAuditCheck["run"]>[0],
@@ -130,4 +131,5 @@ export const coreHtmlChecks = [
   metaDescriptionCheck,
   canonicalCheck,
   robotsMetaCheck,
+  ...socialMetadataChecks,
 ];
