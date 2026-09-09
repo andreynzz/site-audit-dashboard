@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { AuditForm } from "@/components/audit-form";
+
 const capabilities = [
   "HTTP and HTTPS health",
   "Search metadata",
@@ -36,24 +38,7 @@ export default function Home() {
             Run a focused audit of one public page. Get actionable findings for
             HTTP, SEO, social metadata, and performance.
           </p>
-          <form className="mt-10 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_12px_40px_-20px_rgba(15,23,42,0.24)] sm:flex sm:items-center">
-            <label className="sr-only" htmlFor="audit-url">
-              Website URL
-            </label>
-            <input
-              className="h-12 w-full rounded-xl px-4 text-base text-slate-900 outline-none placeholder:text-slate-400"
-              id="audit-url"
-              name="url"
-              placeholder="https://example.com"
-              type="url"
-            />
-            <button
-              className="mt-2 h-12 w-full rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-slate-700 sm:mt-0 sm:w-auto sm:shrink-0"
-              type="button"
-            >
-              Run audit
-            </button>
-          </form>
+          <AuditForm />
           <p className="mt-3 text-xs text-slate-500">
             Public HTTP(S) URLs only. Secure target validation will be enabled
             in the next implementation stages.
