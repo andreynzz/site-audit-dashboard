@@ -26,6 +26,19 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Local database
+
+Start PostgreSQL in Docker:
+
+```bash
+docker compose up -d db
+pnpm db:generate
+pnpm db:migrate
+```
+
+The local credentials in `.env.example` match the Compose service. Stop the
+database with `docker compose down`; its named volume preserves data.
+
 ## Quality commands
 
 ```bash
@@ -42,7 +55,7 @@ GitHub Actions runs these same checks for every pull request and every push to
 
 | Variable                   | Required | Purpose                              |
 | -------------------------- | -------- | ------------------------------------ |
-| `DATABASE_URL`             | Later    | PostgreSQL connection string.        |
+| `DATABASE_URL`             | Yes      | PostgreSQL connection string.        |
 | `GOOGLE_PAGESPEED_API_KEY` | No       | Enables PageSpeed Insights requests. |
 
 ## Development workflow
