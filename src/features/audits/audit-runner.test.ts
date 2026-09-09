@@ -3,6 +3,7 @@ import { runCoreAudit, type AuditRunnerDependencies } from "./audit-runner";
 
 const dependencies: AuditRunnerDependencies = {
   checks: [],
+  fetchResource: async () => true,
   fetchWebsite: async () => ({
     finalUrl: new URL("https://example.com"),
     html: "<title>Example</title>",
@@ -27,7 +28,7 @@ describe("runCoreAudit", () => {
     const audit = await runCoreAudit("https://example.com", dependencies);
     expect(audit).toMatchObject({
       status: "completed",
-      summary: { critical: 0, passed: 2, warnings: 0 },
+      summary: { critical: 0, passed: 4, warnings: 0 },
     });
   });
 
@@ -48,5 +49,17 @@ describe("runCoreAudit", () => {
       getPageSpeed: async () => ({ available: false, reason: "timeout" }),
     });
     expect(audit).toMatchObject({ status: "partial" });
+  });
+
+  it("returns warnings when discovery resources are unavailable", async () => {
+    const audit = await runCoreAudit("https://example.com", {
+      ...dependencies,
+      fetchResource: async () => false,
+    });
+
+    expect(audit).toMatchObject({
+      status: "completed",
+      summary: { critical: 0, passed: 2, warnings: 2 },
+    });
   });
 });
