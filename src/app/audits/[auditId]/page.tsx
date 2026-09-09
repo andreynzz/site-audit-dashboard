@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getDatabaseClient } from "@/db/client";
@@ -16,9 +17,9 @@ export default async function AuditDetailPage({
   const summary = audit.summary;
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-12">
-      <a className="text-sm font-medium text-blue-700" href="/">
+      <Link className="text-sm font-medium text-blue-700" href="/">
         ← New audit
-      </a>
+      </Link>
       <p className="mt-8 text-sm text-slate-500">{audit.status}</p>
       <h1 className="mt-2 text-3xl font-semibold text-slate-950">
         {audit.hostname}
