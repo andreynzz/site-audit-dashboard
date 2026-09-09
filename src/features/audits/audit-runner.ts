@@ -6,6 +6,11 @@ import {
   fetchWebsiteHtml,
   type WebsiteFetchResult,
 } from "./http/secure-website-fetcher";
+import {
+  getPageSpeedScores,
+  type PageSpeedResult,
+  type PageSpeedScores,
+} from "./pagespeed/pagespeed-client";
 
 export type AuditSummary = {
   critical: number;
@@ -18,7 +23,8 @@ export type CompletedAudit = {
   durationMs: number;
   finalUrl: string;
   requestedUrl: string;
-  status: "completed";
+  scores?: PageSpeedScores;
+  status: "completed" | "partial";
   summary: AuditSummary;
 };
 
@@ -34,12 +40,14 @@ export type CoreAudit = CompletedAudit | FailedAudit;
 export type AuditRunnerDependencies = {
   checks: HtmlAuditCheck[];
   fetchWebsite: (input: unknown) => Promise<WebsiteFetchResult>;
+  getPageSpeed: (targetUrl: string) => Promise<PageSpeedResult>;
   parseHtml: typeof parseHtmlDocument;
 };
 
 const defaultDependencies: AuditRunnerDependencies = {
   checks: coreHtmlChecks,
   fetchWebsite: fetchWebsiteHtml,
+  getPageSpeed: getPageSpeedScores,
   parseHtml: parseHtmlDocument,
 };
 
@@ -106,6 +114,9 @@ export async function runCoreAudit(
 
   try {
     const fetched = await dependencies.fetchWebsite(input);
+    const pageSpeed = await dependencies.getPageSpeed(
+      fetched.finalUrl.toString(),
+    );
     const checks = [
       ...createHttpChecks(fetched),
       ...runHtmlChecks(
@@ -119,7 +130,8 @@ export async function runCoreAudit(
       durationMs: Math.round(performance.now() - startedAt),
       finalUrl: fetched.finalUrl.toString(),
       requestedUrl: input,
-      status: "completed",
+      scores: pageSpeed.available ? pageSpeed.scores : undefined,
+      status: pageSpeed.available ? "completed" : "partial",
       summary: summarize(checks),
     };
   } catch {

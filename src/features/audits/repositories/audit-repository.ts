@@ -15,7 +15,7 @@ function hostnameFrom(input: string): string {
 }
 
 export function toAuditRecord(audit: CoreAudit): typeof audits.$inferInsert {
-  const completed = audit.status === "completed";
+  const completed = audit.status !== "failed";
 
   return {
     completedAt: completed ? new Date() : undefined,
