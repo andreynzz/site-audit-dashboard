@@ -22,9 +22,12 @@ export default function Home() {
           </span>
           <span>Site Audit</span>
         </Link>
-        <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-          Technical health, clearly explained
-        </span>
+        <Link
+          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600"
+          href="/audits"
+        >
+          View history
+        </Link>
       </header>
       <section className="flex flex-1 flex-col justify-center py-20 sm:py-28">
         <div className="max-w-3xl">

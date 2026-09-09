@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getDatabaseClient } from "@/db/client";
 import { createAuditRepository } from "@/features/audits/repositories/audit-repository";
 
+export const dynamic = "force-dynamic";
+
 export default async function AuditDetailPage({
   params,
 }: {
