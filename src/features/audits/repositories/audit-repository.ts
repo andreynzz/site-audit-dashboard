@@ -1,25 +1,10 @@
 import { desc, eq } from "drizzle-orm";
 
+import type { createDatabaseClient } from "../../../db/client";
 import type { CoreAudit } from "../audit-runner";
 import { audits, type AuditStatus } from "../../../db/schema";
 
-type AuditDatabase = {
-  insert: (table: typeof audits) => {
-    values: (value: typeof audits.$inferInsert) => {
-      returning: () => Promise<(typeof audits.$inferSelect)[]>;
-    };
-  };
-  select: () => {
-    from: (table: typeof audits) => {
-      orderBy: (order: unknown) => {
-        limit: (limit: number) => Promise<(typeof audits.$inferSelect)[]>;
-      };
-      where: (condition: unknown) => {
-        limit: (limit: number) => Promise<(typeof audits.$inferSelect)[]>;
-      };
-    };
-  };
-};
+type AuditDatabase = ReturnType<typeof createDatabaseClient>;
 
 function hostnameFrom(input: string): string {
   try {
