@@ -1,7 +1,7 @@
 import type { CheerioAPI } from "cheerio";
 
 export type AuditCheckResult = {
-  category: "seo";
+  category: "http" | "seo";
   id: string;
   message: string;
   name: string;
