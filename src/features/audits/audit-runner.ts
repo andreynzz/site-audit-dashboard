@@ -13,6 +13,8 @@ import {
   type PageSpeedScores,
 } from "./pagespeed/pagespeed-client";
 
+export const slowResponseThresholdMs = 1_000;
+
 export type AuditSummary = {
   critical: number;
   passed: number;
@@ -94,6 +96,27 @@ function createHttpChecks(result: WebsiteFetchResult): AuditCheckResult[] {
           severity: "critical",
           status: "failed",
           value: String(result.statusCode),
+        },
+    result.responseTimeMs <= slowResponseThresholdMs
+      ? {
+          category: "http",
+          id: "response-time",
+          message: `The page responded in ${result.responseTimeMs} ms.`,
+          name: "Response time",
+          severity: "info",
+          status: "passed",
+          value: `${result.responseTimeMs} ms`,
+        }
+      : {
+          category: "http",
+          id: "response-time",
+          message: `The page responded in ${result.responseTimeMs} ms.`,
+          name: "Response time",
+          recommendation:
+            "Investigate server, caching, and asset delivery delays to improve response time.",
+          severity: "warning",
+          status: "warning",
+          value: `${result.responseTimeMs} ms`,
         },
   ];
 }
