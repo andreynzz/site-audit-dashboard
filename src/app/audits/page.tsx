@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getDatabaseClient } from "@/db/client";
 import { createAuditRepository } from "@/features/audits/repositories/audit-repository";
 
+export const dynamic = "force-dynamic";
+
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
