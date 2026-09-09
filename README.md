@@ -35,6 +35,9 @@ pnpm test
 pnpm build
 ```
 
+GitHub Actions runs these same checks for every pull request and every push to
+`develop` or `main`.
+
 ## Environment variables
 
 | Variable                   | Required | Purpose                              |
