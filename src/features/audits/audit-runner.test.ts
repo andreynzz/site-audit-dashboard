@@ -28,7 +28,7 @@ describe("runCoreAudit", () => {
     const audit = await runCoreAudit("https://example.com", dependencies);
     expect(audit).toMatchObject({
       status: "completed",
-      summary: { critical: 0, passed: 4, warnings: 0 },
+      summary: { critical: 0, passed: 5, warnings: 0 },
     });
   });
 
@@ -59,7 +59,32 @@ describe("runCoreAudit", () => {
 
     expect(audit).toMatchObject({
       status: "completed",
-      summary: { critical: 0, passed: 2, warnings: 2 },
+      summary: { critical: 0, passed: 3, warnings: 2 },
     });
+  });
+
+  it("reports a warning for a slow website response", async () => {
+    const audit = await runCoreAudit("https://example.com", {
+      ...dependencies,
+      fetchWebsite: async () => ({
+        finalUrl: new URL("https://example.com"),
+        html: "<title>Example</title>",
+        responseTimeMs: 1_001,
+        statusCode: 200,
+      }),
+    });
+
+    expect(audit).toMatchObject({
+      summary: { critical: 0, passed: 4, warnings: 1 },
+    });
+    expect(audit.status === "failed" ? [] : audit.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "response-time",
+          status: "warning",
+          value: "1001 ms",
+        }),
+      ]),
+    );
   });
 });
