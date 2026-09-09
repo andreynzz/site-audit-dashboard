@@ -6,6 +6,7 @@ import {
   fetchWebsiteHtml,
   type WebsiteFetchResult,
 } from "./http/secure-website-fetcher";
+import { isAuditResourceAvailable } from "./http/audit-resource-fetcher";
 import {
   getPageSpeedScores,
   type PageSpeedResult,
@@ -39,6 +40,7 @@ export type CoreAudit = CompletedAudit | FailedAudit;
 
 export type AuditRunnerDependencies = {
   checks: HtmlAuditCheck[];
+  fetchResource: (input: URL) => Promise<boolean>;
   fetchWebsite: (input: unknown) => Promise<WebsiteFetchResult>;
   getPageSpeed: (targetUrl: string) => Promise<PageSpeedResult>;
   parseHtml: typeof parseHtmlDocument;
@@ -46,6 +48,7 @@ export type AuditRunnerDependencies = {
 
 const defaultDependencies: AuditRunnerDependencies = {
   checks: coreHtmlChecks,
+  fetchResource: isAuditResourceAvailable,
   fetchWebsite: fetchWebsiteHtml,
   getPageSpeed: getPageSpeedScores,
   parseHtml: parseHtmlDocument,
@@ -95,6 +98,53 @@ function createHttpChecks(result: WebsiteFetchResult): AuditCheckResult[] {
   ];
 }
 
+async function createDiscoveryChecks(
+  finalUrl: URL,
+  fetchResource: AuditRunnerDependencies["fetchResource"],
+): Promise<AuditCheckResult[]> {
+  const resources = [
+    {
+      id: "robots-txt",
+      name: "robots.txt",
+      path: "/robots.txt",
+      recommendation:
+        "Add a robots.txt file to provide crawl guidance for search engines.",
+    },
+    {
+      id: "sitemap-xml",
+      name: "sitemap.xml",
+      path: "/sitemap.xml",
+      recommendation:
+        "Publish a sitemap.xml file to help search engines discover pages.",
+    },
+  ];
+
+  const availability = await Promise.all(
+    resources.map(({ path }) => fetchResource(new URL(path, finalUrl))),
+  );
+
+  return resources.map((resource, index) =>
+    availability[index]
+      ? {
+          category: "seo",
+          id: resource.id,
+          message: `${resource.name} is available.`,
+          name: resource.name,
+          severity: "info",
+          status: "passed",
+        }
+      : {
+          category: "seo",
+          id: resource.id,
+          message: `${resource.name} was not available.`,
+          name: resource.name,
+          recommendation: resource.recommendation,
+          severity: "warning",
+          status: "warning",
+        },
+  );
+}
+
 function summarize(checks: AuditCheckResult[]): AuditSummary {
   return checks.reduce(
     (summary, check) => ({
@@ -117,8 +167,13 @@ export async function runCoreAudit(
     const pageSpeed = await dependencies.getPageSpeed(
       fetched.finalUrl.toString(),
     );
+    const discoveryChecks = await createDiscoveryChecks(
+      fetched.finalUrl,
+      dependencies.fetchResource,
+    );
     const checks = [
       ...createHttpChecks(fetched),
+      ...discoveryChecks,
       ...runHtmlChecks(
         dependencies.parseHtml(fetched.html),
         dependencies.checks,
